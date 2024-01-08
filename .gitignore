@@ -26,3 +26,4 @@ go.work
 
 # Built files
 dist/
+mocks/

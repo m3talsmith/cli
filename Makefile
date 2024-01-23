@@ -30,7 +30,7 @@ $(BUILD_DIR)/$(BINARY_NAME):
 
 .PHONY: build run clean test lint audit format
 
-build: $(BUILD_DIR)/$(BINARY_NAME)
+build: clean $(BUILD_DIR)/$(BINARY_NAME)
  
 run: $(BUILD_DIR)/$(BINARY_NAME)
 	${BUILD_DIR}/${BINARY_NAME} $(ARGS)
@@ -38,7 +38,7 @@ run: $(BUILD_DIR)/$(BINARY_NAME)
 clean:
 	@echo "==> Cleaning project files"
 	go clean
-	rm -f ${BUILD_DIR}
+	rm -rf ${BUILD_DIR}
 
 test:
 	go test -race \

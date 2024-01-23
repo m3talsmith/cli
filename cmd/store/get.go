@@ -60,9 +60,9 @@ var getCmd = &cobra.Command{
 }
 
 func init() {
-	getCmd.Flags().String("store-id", "", "Store ID")
+	exportCmd.Flags().String("store-id", "", "Store ID")
 
-	err := getCmd.MarkFlagRequired("store-id")
+	err := exportCmd.MarkFlagRequired("store-id")
 	if err != nil {
 		fmt.Print(err)
 		os.Exit(1)

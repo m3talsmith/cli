@@ -22,13 +22,14 @@ import (
 	"os"
 	"strings"
 
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+
 	"github.com/openfga/cli/cmd/model"
 	"github.com/openfga/cli/cmd/query"
 	"github.com/openfga/cli/cmd/store"
 	"github.com/openfga/cli/cmd/tuple"
 	"github.com/openfga/cli/internal/cmdutils"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var cfgFile string
@@ -63,12 +64,12 @@ func init() {
 	rootCmd.PersistentFlags().String("api-token", "", "API Token. Will be sent in as a Bearer in the Authorization header")
 	rootCmd.PersistentFlags().String("api-token-issuer", "", "API Token Issuer. API responsible for issuing the API Token. Used in the Client Credentials flow") //nolint:lll
 	rootCmd.PersistentFlags().String("api-audience", "", "API Audience. Used when performing the Client Credentials flow")
-	rootCmd.PersistentFlags().String("client-id", "", "Client ID. Sent to the Token Issuer during the Client Credentials flow")         //nolint:lll
-	rootCmd.PersistentFlags().String("client-secret", "", "Client Secret. Sent to the Token Issuer during the Client Credentials flow") //nolint:lll
+	rootCmd.PersistentFlags().String("client-id", "", "Client ID. Sent to the Token Issuer during the Client Credentials flow")                            //nolint:lll
+	rootCmd.PersistentFlags().String("client-secret", "", "Client Secret. Sent to the Token Issuer during the Client Credentials flow")                    //nolint:lll
+	rootCmd.PersistentFlags().StringArray("api-scopes", []string{}, "API Scopes (repeat option for multiple values). Used in the Client Credentials flow") //nolint:lll
 
 	rootCmd.MarkFlagsRequiredTogether(
 		"api-token-issuer",
-		"api-audience",
 		"client-id",
 		"client-secret",
 	)

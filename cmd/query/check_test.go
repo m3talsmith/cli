@@ -6,9 +6,10 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/openfga/cli/internal/mocks"
 	openfga "github.com/openfga/go-sdk"
 	"github.com/openfga/go-sdk/client"
+
+	mock_client "github.com/openfga/cli/internal/mocks"
 )
 
 var errMockCheck = errors.New("mock error")
@@ -40,12 +41,13 @@ func TestCheckWithError(t *testing.T) {
 		Relation:         "writer",
 		Object:           "doc:doc1",
 		ContextualTuples: contextualTuples,
+		Context:          queryContext,
 	}
 	mockBody.EXPECT().Body(body).Return(mockRequest)
 
 	mockFgaClient.EXPECT().Check(context.Background()).Return(mockBody)
 
-	_, err := check(mockFgaClient, "user:foo", "writer", "doc:doc1", contextualTuples)
+	_, err := check(mockFgaClient, "user:foo", "writer", "doc:doc1", contextualTuples, queryContext)
 	if err == nil {
 		t.Error("Expect error but there is none")
 	}
@@ -83,12 +85,13 @@ func TestCheckWithNoError(t *testing.T) {
 		Relation:         "writer",
 		Object:           "doc:doc1",
 		ContextualTuples: contextualTuples,
+		Context:          queryContext,
 	}
 	mockBody.EXPECT().Body(body).Return(mockRequest)
 
 	mockFgaClient.EXPECT().Check(context.Background()).Return(mockBody)
 
-	output, err := check(mockFgaClient, "user:foo", "writer", "doc:doc1", contextualTuples)
+	output, err := check(mockFgaClient, "user:foo", "writer", "doc:doc1", contextualTuples, queryContext)
 	if err != nil {
 		t.Error(err)
 	}

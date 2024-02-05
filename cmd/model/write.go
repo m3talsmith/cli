@@ -21,24 +21,26 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/openfga/cli/internal/authorizationmodel"
-	"github.com/openfga/cli/internal/cmdutils"
-	"github.com/openfga/cli/internal/output"
 	openfga "github.com/openfga/go-sdk"
 	"github.com/openfga/go-sdk/client"
 	"github.com/spf13/cobra"
+
+	"github.com/openfga/cli/internal/authorizationmodel"
+	"github.com/openfga/cli/internal/cmdutils"
+	"github.com/openfga/cli/internal/output"
 )
 
 func Write(
 	fgaClient client.SdkClient,
 	inputModel authorizationmodel.AuthzModel,
 ) (*client.ClientWriteAuthorizationModelResponse, error) {
-	body := &client.ClientWriteAuthorizationModelRequest{
+	body := client.ClientWriteAuthorizationModelRequest{
 		SchemaVersion:   inputModel.GetSchemaVersion(),
 		TypeDefinitions: inputModel.GetTypeDefinitions(),
+		Conditions:      inputModel.GetConditions(),
 	}
 
-	model, err := fgaClient.WriteAuthorizationModel(context.Background()).Body(*body).Execute()
+	model, err := fgaClient.WriteAuthorizationModel(context.Background()).Body(body).Execute()
 	if err != nil {
 		return nil, fmt.Errorf("failed to write model due to %w", err)
 	}

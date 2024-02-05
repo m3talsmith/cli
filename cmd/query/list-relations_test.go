@@ -8,14 +8,18 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/openfga/cli/internal/fga"
-	"github.com/openfga/cli/internal/mocks"
 	"github.com/openfga/go-sdk/client"
+
+	"github.com/openfga/cli/internal/cmdutils"
+	"github.com/openfga/cli/internal/fga"
+	mock_client "github.com/openfga/cli/internal/mocks"
 )
 
 var errMockGet = errors.New("mock get model error")
 
 var errMockListRelations = errors.New("mock error")
+
+var queryContext, _ = cmdutils.ParseQueryContextInner(`{"x": 1}`)
 
 func TestListRelationsLatestAuthModelError(t *testing.T) {
 	t.Parallel()
@@ -37,7 +41,7 @@ func TestListRelationsLatestAuthModelError(t *testing.T) {
 	contextualTuples := []client.ClientContextualTupleKey{
 		{User: "user:foo", Relation: "admin", Object: "doc:doc1"},
 	}
-	_, err := listRelations(clientConfig, mockFgaClient, "user:foo", "doc:doc1", relations, contextualTuples)
+	_, err := listRelations(clientConfig, mockFgaClient, "user:foo", "doc:doc1", relations, contextualTuples, queryContext)
 
 	if err == nil {
 		t.Error("Expect error but there is none")
@@ -66,7 +70,7 @@ func TestListRelationsAuthModelSpecifiedError(t *testing.T) {
 	contextualTuples := []client.ClientContextualTupleKey{
 		{User: "user:foo", Relation: "admin", Object: "doc:doc1"},
 	}
-	_, err := listRelations(clientConfig, mockFgaClient, "user:foo", "doc:doc1", relations, contextualTuples)
+	_, err := listRelations(clientConfig, mockFgaClient, "user:foo", "doc:doc1", relations, contextualTuples, queryContext)
 
 	if err == nil {
 		t.Error("Expect error but there is none")
@@ -114,6 +118,7 @@ func TestListRelationsLatestAuthModelListError(t *testing.T) {
 		Relations:        []string{"viewer"},
 		Object:           "doc:doc1",
 		ContextualTuples: contextualTuples,
+		Context:          queryContext,
 	}
 	mockBody.EXPECT().Body(body).Return(mockListRelationsRequest)
 	gomock.InOrder(
@@ -123,7 +128,7 @@ func TestListRelationsLatestAuthModelListError(t *testing.T) {
 
 	var clientConfig fga.ClientConfig
 
-	_, err := listRelations(clientConfig, mockFgaClient, "user:foo", "doc:doc1", relations, contextualTuples)
+	_, err := listRelations(clientConfig, mockFgaClient, "user:foo", "doc:doc1", relations, contextualTuples, queryContext)
 	if err == nil {
 		t.Error("Expect error but there is none")
 	}
@@ -159,7 +164,8 @@ func TestListRelationsLatestAuthModelEmpty(t *testing.T) {
 		Relations: []string{},
 	}
 
-	response, err := listRelations(clientConfig, mockFgaClient, "doc:doc1", "user:foo", relations, contextualTuples)
+	response, err := listRelations(clientConfig, mockFgaClient, "doc:doc1", "user:foo", relations,
+		contextualTuples, queryContext)
 	if err != nil {
 		t.Error(err)
 	}
@@ -212,6 +218,7 @@ func TestListRelationsLatestAuthModelList(t *testing.T) {
 		Relations:        []string{"viewer"},
 		Object:           "doc:doc1",
 		ContextualTuples: contextualTuples,
+		Context:          queryContext,
 	}
 	mockBody.EXPECT().Body(body).Return(mockListRelationsRequest)
 	gomock.InOrder(
@@ -221,7 +228,8 @@ func TestListRelationsLatestAuthModelList(t *testing.T) {
 
 	var clientConfig fga.ClientConfig
 
-	output, err := listRelations(clientConfig, mockFgaClient, "user:foo", "doc:doc1", relations, contextualTuples)
+	output, err := listRelations(clientConfig, mockFgaClient, "user:foo", "doc:doc1", relations,
+		contextualTuples, queryContext)
 	if err != nil {
 		t.Error(err)
 	}
@@ -263,6 +271,7 @@ func TestListRelationsMultipleRelations(t *testing.T) {
 		Relations:        []string{"viewer", "editor"},
 		Object:           "doc:doc1",
 		ContextualTuples: contextualTuples,
+		Context:          queryContext,
 	}
 	mockBody.EXPECT().Body(body).Return(mockListRelationsRequest)
 	gomock.InOrder(
@@ -271,7 +280,8 @@ func TestListRelationsMultipleRelations(t *testing.T) {
 
 	var clientConfig fga.ClientConfig
 
-	output, err := listRelations(clientConfig, mockFgaClient, "user:foo", "doc:doc1", relations, contextualTuples)
+	output, err := listRelations(clientConfig, mockFgaClient, "user:foo", "doc:doc1", relations,
+		contextualTuples, queryContext)
 	if err != nil {
 		t.Error(err)
 	}

@@ -20,8 +20,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/openfga/cli/internal/fga"
 	"github.com/spf13/cobra"
+
+	"github.com/openfga/cli/internal/fga"
 )
 
 func GetClientConfig(cmd *cobra.Command) fga.ClientConfig {
@@ -42,6 +43,7 @@ func GetClientConfig(cmd *cobra.Command) fga.ClientConfig {
 	clientCredentialsAPIAudience, _ := cmd.Flags().GetString("api-audience")
 	clientCredentialsClientID, _ := cmd.Flags().GetString("client-id")
 	clientCredentialsClientSecret, _ := cmd.Flags().GetString("client-secret")
+	clientCredentialsScopes, _ := cmd.Flags().GetStringArray("api-scopes")
 
 	return fga.ClientConfig{
 		ApiUrl:               apiURL,
@@ -52,5 +54,6 @@ func GetClientConfig(cmd *cobra.Command) fga.ClientConfig {
 		APIAudience:          clientCredentialsAPIAudience,
 		ClientID:             clientCredentialsClientID,
 		ClientSecret:         clientCredentialsClientSecret,
+		APIScopes:            clientCredentialsScopes,
 	}
 }

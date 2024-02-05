@@ -21,11 +21,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/openfga/cli/internal/cmdutils"
-	"github.com/openfga/cli/internal/output"
 	"github.com/openfga/go-sdk/client"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
+
+	"github.com/openfga/cli/internal/cmdutils"
+	"github.com/openfga/cli/internal/output"
 )
 
 // deleteCmd represents the delete command.
@@ -71,7 +72,7 @@ var deleteCmd = &cobra.Command{
 			deleteRequest := client.ClientWriteRequest{
 				Deletes: tuples,
 			}
-			response, err := importTuples(fgaClient, deleteRequest, maxTuplesPerWrite, maxParallelRequests)
+			response, err := ImportTuples(fgaClient, deleteRequest, maxTuplesPerWrite, maxParallelRequests)
 			if err != nil {
 				return err
 			}

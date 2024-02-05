@@ -7,9 +7,10 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/openfga/go-sdk/client"
+
 	"github.com/openfga/cli/internal/authorizationmodel"
 	mockclient "github.com/openfga/cli/internal/mocks"
-	"github.com/openfga/go-sdk/client"
 )
 
 var errMockWrite = errors.New("mock error")
@@ -21,7 +22,7 @@ func TestWriteModelFail(t *testing.T) {
 	defer mockCtrl.Finish()
 	mockFgaClient := mockclient.NewMockSdkClient(mockCtrl)
 
-	modelJSONTxt := `{"schema_version":"1.1","type_definitions":[{"relations":{"viewer":{"this":{}}},"type":"github-repo"}]}` //nolint:lll
+	modelJSONTxt := `{"schema_version":"1.1","type_definitions":[{"relations":{"viewer":{"this":{}}},"type":"github-repo"}],"conditions":{}}` //nolint:lll
 	body := &client.ClientWriteAuthorizationModelRequest{}
 
 	err := json.Unmarshal([]byte(modelJSONTxt), &body)
@@ -57,7 +58,7 @@ func TestWriteModel(t *testing.T) {
 	defer mockCtrl.Finish()
 	mockFgaClient := mockclient.NewMockSdkClient(mockCtrl)
 
-	modelJSONTxt := `{"schema_version":"1.1","type_definitions":[{"relations":{"viewer":{"this":{}}},"type":"github-repo"}]}` //nolint:lll
+	modelJSONTxt := `{"schema_version":"1.1","type_definitions":[{"relations":{"viewer":{"this":{}}},"type":"github-repo"}],"conditions":{}}` //nolint:lll
 
 	body := &client.ClientWriteAuthorizationModelRequest{}
 

@@ -20,6 +20,7 @@ A cross-platform CLI to interact with an OpenFGA server
     - [Stores](#stores)
       - [List All Stores](#list-stores)
       - [Create a Store](#create-store)
+      - [Import a Store](#import-store)
       - [Get a Store](#get-store)
       - [Delete a Store](#delete-store)
     - [Authorization Models](#authorization-models)
@@ -33,7 +34,7 @@ A cross-platform CLI to interact with an OpenFGA server
     - [Relationship Tuples](#relationship-tuples)
       - [Read Relationship Tuple Changes (Watch)](#read-relationship-tuple-changes-watch)
       - [Read Relationship Tuples](#read-relationship-tuples)
-      - [Create Relationship Tuples](#create-relationship-tuples)
+      - [Write Relationship Tuples](#write-relationship-tuples)
       - [Delete Relationship Tuples](#delete-relationship-tuples)
     - [Relationship Queries](#relationship-queries)
       - [Check](#check)
@@ -83,6 +84,13 @@ Alpine Linux:
 sudo apk add --allow-untrusted ./fga_<version>_linux_<arch>.apk
 ```
 
+### Windows
+
+via [Scoop](https://scoop.sh/)
+```shell
+scoop install openfga
+```
+
 ### Docker
 ```shell
 docker pull openfga/cli; docker run -it openfga/cli
@@ -90,10 +98,8 @@ docker pull openfga/cli; docker run -it openfga/cli
 
 ### Go
 
-> note that the command will be named `cli`
-
 ```shell
-go install github.com/openfga/cli@latest
+go install github.com/openfga/cli/cmd/fga@latest
 ```
 
 ### Manually
@@ -112,7 +118,7 @@ Make sure you have Go 1.20 or later installed. See the [Go downloads](https://go
 2. Then use the build command:
 
    ```bash
-   go build -o ./dist/fga main.go
+   go build -o ./dist/fga ./cmd/fga/main.go
    ```
 
    or if you have `make` installed, just run:
@@ -139,6 +145,7 @@ For any command that interacts with an OpenFGA server, these configuration value
 | Shared Secret          | `--api-token`        | `FGA_API_TOKEN`        | `api-token`        |
 | Client ID              | `--client-id`        | `FGA_CLIENT_ID`        | `client-id`        |
 | Client Secret          | `--client-secret`    | `FGA_CLIENT_SECRET`    | `client-secret`    |
+| Scopes                 | `--api-scopes`       | `FGA_API_SCOPES`       | `api-scopes`       |
 | Token Issuer           | `--api-token-issuer` | `FGA_API_TOKEN_ISSUER` | `api-token-issuer` |
 | Token Audience         | `--api-audience`     | `FGA_API_AUDIENCE`     | `api-audience`     |
 | Store ID               | `--store-id`         | `FGA_STORE_ID`         | `store-id`         |
@@ -162,6 +169,7 @@ store-id: 01H0H015178Y2V4CX10C2KGHF4
 | Description                     | command  | parameters   | example                                                  |
 |---------------------------------|----------|--------------|----------------------------------------------------------|
 | [Create a Store](#create-store) | `create` | `--name`     | `fga store create --name="FGA Demo Store"`               |
+| [Import a Store](#import-store) | `import` | `--file`     | `fga store import --file store.fga.yaml`                 |
 | [List Stores](#list-stores)     | `list`   |              | `fga store list`                                         |
 | [Get a Store](#get-store)       | `get`    | `--store-id` | `fga store get --store-id=01H0H015178Y2V4CX10C2KGHF4`    |
 | [Delete a Store](#delete-store) | `delete` | `--store-id` | `fga store delete --store-id=01H0H015178Y2V4CX10C2KGHF4` |
@@ -210,6 +218,24 @@ To automatically set the created store id as an environment variable that will t
 
 ```bash
 export FGA_STORE_ID=$(fga store create --model model.fga | jq -r .store.id)
+```
+##### Import Store
+
+###### Command
+fga store **import**
+
+###### Parameters
+* `--file`: File containing the store.
+* `--store-id`: Specifies the store id to import into
+* `--max-tuples-per-write`: Max tuples to send in a single write (optional, default=1)
+* `--max-parallel-requests`: Max requests to send in parallel (optional, default=4)
+
+###### Example
+`fga store import --file model.fga.yaml`
+
+###### Response
+```json
+{}
 ```
 
 ##### List Stores
@@ -440,7 +466,7 @@ The tests file should be in yaml and have the following format:
 ---
 name: Store Name # store name, optional
 # model_file: ./model.fga # a global model that would apply to all tests, optional
-# model can be used instead of model-file, optional
+# model can be used instead of model_file, optional
 model: |
   model
     schema 1.1
@@ -453,6 +479,7 @@ model: |
       define can_write: owner or can_write from parent
       define can_share: owner
 
+# tuple_file: ./tuples.yaml # global tuples that would apply to all tests, optional
 tuples: # global tuples that would apply to all tests, optional
   - user: folder:1
     relation: parent
@@ -460,6 +487,7 @@ tuples: # global tuples that would apply to all tests, optional
 tests: # required
   - name: test-1
     description: testing that the model works # optional
+    # tuple_file: ./tuples.json # tuples that would apply per test
     tuples:
       - user: user:anne
         relation: owner
@@ -552,7 +580,7 @@ type document
 | [Write Relationship Tuples](#write-relationship-tuples)                           | `write`   | `--store-id`, `--model-id`           | `fga tuple write user:anne can_view document:roadmap --store-id=01H0H015178Y2V4CX10C2KGHF4`        |
 | [Delete Relationship Tuples](#delete-relationship-tuples)                         | `delete`  | `--store-id`, `--model-id`           | `fga tuple delete user:anne can_view document:roadmap --store-id=01H0H015178Y2V4CX10C2KGHF4`                                                          |
 | [Read Relationship Tuples](#read-relationship-tuples)                             | `read`    | `--store-id`, `--model-id`           | `fga tuple read --store-id=01H0H015178Y2V4CX10C2KGHF4 --model-id=01GXSA8YR785C4FYS3C0RTG7B1`                      |
-| [Read Relationship Tuple Changes (Watch)](#read-relationship-tuple-changes-watch) | `changes` | `--store-id`, `--model-id`           | `fga tuple changes --store-id=01H0H015178Y2V4CX10C2KGHF4 --model-id=01GXSA8YR785C4FYS3C0RTG7B1`                   |
+| [Read Relationship Tuple Changes (Watch)](#read-relationship-tuple-changes-watch) | `changes` | `--store-id`, `--type`, `--continuation-token`,           | `fga tuple changes --store-id=01H0H015178Y2V4CX10C2KGHF4 --type=document --continuation-token=M3w=`                   |
 | [Import Relationship Tuples](#import-relationship-tuples)                        | `import`  | `--store-id`, `--model-id`, `--file` | `fga tuple import --store-id=01H0H015178Y2V4CX10C2KGHF4 --model-id=01GXSA8YR785C4FYS3C0RTG7B1 --file tuples.json` |
 
 ##### Write Relationship Tuples
@@ -564,22 +592,74 @@ fga tuple **write** <user> <relation> <object> --store-id=<store-id>
 * `<user>`: User
 * `<relation>`: Relation
 * `<object>`: Object
+* `--condition-name`: Condition name (optional)
+* `--condition-context`: Condition context (optional)
 * `--store-id`: Specifies the store id
 * `--model-id`: Specifies the model id to target (optional)
-* `--file`: Specifies the file name, `yaml` and `json` files are supported
+* `--file`: Specifies the file name, `json`, `yaml` and `csv` files are supported
 * `--max-tuples-per-write`: Max tuples to send in a single write (optional, default=1)
 * `--max-parallel-requests`: Max requests to send in parallel (optional, default=4)
 
 ###### Example (with arguments)
-`fga tuple write --store-id=01H0H015178Y2V4CX10C2KGHF4 user:anne can_view document:roadmap`
+- `fga tuple write --store-id=01H0H015178Y2V4CX10C2KGHF4 user:anne can_view document:roadmap`
+- `fga tuple write --store-id=01H0H015178Y2V4CX10C2KGHF4 user:anne can_view document:roadmap --condition-name inOffice --condition-context '{"office_ip":"10.0.1.10"}'`
 
 ###### Response
 ```json5
-{}
+{
+  "successful": [
+    {
+      "object":"document:roadmap",
+      "relation":"writer",
+      "user":"user:annie"
+    }
+  ],
+}
 ```
 
 ###### Example (with file)
 `fga tuple write --store-id=01H0H015178Y2V4CX10C2KGHF4 --file tuples.json`
+
+If using a `csv` file, the format should be:
+
+```csv
+user_type,user_id,user_relation,relation,object_type,object_id,condition_name,condition_context
+folder,product,,parent,folder,product-2021,inOfficeIP,"{""ip_addr"":""10.0.0.1""}"
+```
+
+
+If using a `yaml` file, the format should be:
+
+```yaml
+- user: folder:5
+  relation: parent
+  object: folder:product-2021
+- user: folder:product-2021
+  relation: parent
+  object: folder:product-2021Q1
+```
+
+If using a `json` file, the format should be:
+
+```json
+[
+  {
+    "user": "user:anne",
+    "relation": "owner",
+    "object": "folder:product"
+  },
+  {
+    "user": "folder:product",
+    "relation": "parent",
+    "object": "folder:product-2021"
+  },
+  {
+    "user": "user:beth",
+    "relation": "viewer",
+    "object": "folder:product-2021"
+  }
+]
+```
 
 ###### Response
 ```json5
@@ -717,11 +797,12 @@ fga tuple **changes** --type <type> --store-id=<store-id>
 
 ###### Parameters
 * `--store-id`: Specifies the store id
-* `--type`: restrict to a specific type (optional)
+* `--type`: Restrict to a specific type (optional)
 * `--max-pages`: Max number of pages to retrieve (default: 20)
+* `--continuation-token`: Continuation token to start changes from
 
 ###### Example
-`fga tuple changes --store-id=01H0H015178Y2V4CX10C2KGHF4 --type document`
+`fga tuple changes --store-id=01H0H015178Y2V4CX10C2KGHF4 --type=document --continuation-token=M3w=`
 
 ###### Response
 ```json5
@@ -736,7 +817,8 @@ fga tuple **changes** --type <type> --store-id=<store-id>
         "user": "user:anne"
       }
     }
-  ]
+  ],
+  "continuation_token":"NHw="
 }
 ```
 
@@ -817,15 +899,18 @@ In JSON:
 ##### Check
 
 ###### Command
-fga query **check** <user> <relation> <object> [--contextual-tuple "<user> <relation> <object>"]* --store-id=<store-id> [--model-id=<model-id>]
+fga query **check** <user> <relation> <object> [--condition] [--contextual-tuple "\<user\> \<relation\> \<object\>"]* --store-id=<store-id> [--model-id=<model-id>]
 
 ###### Parameters
 * `--store-id`: Specifies the store id
 * `--model-id`: Specifies the model id to target (optional)
-* `--contextual-tuple`: Contextual tuples
+* `--contextual-tuple`: Contextual tuples (optional)
+* `--context`: Condition context (optional)
 
 ###### Example
-`fga query check --store-id=01H0H015178Y2V4CX10C2KGHF4 user:anne can_view document:roadmap --contextual-tuple "user:anne can_view folder:product" --contextual-tuple "folder:product parent document:roadmap"`
+- `fga query check --store-id=01H0H015178Y2V4CX10C2KGHF4 user:anne can_view document:roadmap --contextual-tuple "user:anne can_view folder:product" --contextual-tuple "folder:product parent document:roadmap"`
+- `fga query check --store-id="01H4P8Z95KTXXEP6Z03T75Q984" user:anne can_view document:roadmap --context '{"ip_address":"127.0.0.1"}'`
+
 
 ###### Response
 ```json5
@@ -843,9 +928,11 @@ fga query **list-objects** <user> <relation> <object_type> [--contextual-tuple "
 * `--store-id`: Specifies the store id
 * `--model-id`: Specifies the model id to target (optional)
 * `--contextual-tuple`: Contextual tuples (optional) (can be multiple)
+* `--context`: Condition context (optional)
 
 ###### Example
-`fga query list-objects --store-id=01H0H015178Y2V4CX10C2KGHF4 user:anne can_view document --contextual-tuple "user:anne can_view folder:product" --contextual-tuple "folder:product parent document:roadmap"`
+- `fga query list-objects --store-id=01H0H015178Y2V4CX10C2KGHF4 user:anne can_view document --contextual-tuple "user:anne can_view folder:product" --contextual-tuple "folder:product parent document:roadmap"`
+- `fga query list-objects --store-id=01H0H015178Y2V4CX10C2KGHF4 user:anne can_view document --context '{"ip_address":"127.0.0.1"}`
 
 ###### Response
 ```json5
@@ -866,9 +953,12 @@ fga query **list-objects** <user> <object> [--relation <relation>]* [--contextua
 * `--store-id`: Specifies the store id
 * `--model-id`: Specifies the model id to target (optional)
 * `--contextual-tuple`: Contextual tuples (optional) (can be multiple)
+* `--context`: Condition context (optional)
 
 ###### Example
 `fga query list-relations --store-id=01H0H015178Y2V4CX10C2KGHF4 user:anne document:roadmap --relation can_view`
+`fga query list-relations --store-id=01H0H015178Y2V4CX10C2KGHF4 user:anne document:roadmap --relation can_view --contextual-tuple "user:anne can_view folder:product"`
+`fga query list-relations --store-id=01H0H015178Y2V4CX10C2KGHF4 user:anne document:roadmap --relation can_view --context '{"ip_address":"127.0.0.1"}`
 
 ###### Response
 ```json5

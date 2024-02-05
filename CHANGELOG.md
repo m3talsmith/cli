@@ -1,5 +1,50 @@
 # Changelog
 
+## v0.2.5
+
+### [0.2.5](https://github.com/openfga/cli/compare/v0.2.4...v0.2.5) (2024-01-23)
+
+Added:
+- Add support for oauth2 credentials with scopes instead of audience (#232) - thanks @le-yams
+- `fga tuple import` now supports any columns order and optional fields are no longer required (#230) - thanks @le-yams  
+- Support for mixed operators in the model.
+  `define viewer: ([user] but not blocked) or owner or viewer from parent` is now supported!
+  See [openfga/language#107](https://github.com/openfga/language/pull/107#issue-1990426478) for more details on supported and unsupported functionality
+
+Fixed:
+- Fixed `fga model write` not writing models with conditions (#236)
+- Re-added support for condition parameters as identifiers and relation names (e.g. `list` and `map`)
+
+## v0.2.4
+
+### [0.2.4](https://github.com/openfga/cli/compare/v0.2.3...v0.2.4) (2024-01-16)
+
+Fixed:
+- Fixed support for reading json models (#228)
+
+
+## v0.2.3
+
+### [0.2.3](https://github.com/openfga/cli/compare/v0.2.2...v0.2.3) (2024-01-11)
+
+Changed:
+- add support for using csv files to import tuples (#222)
+
+
+## v0.2.2
+
+### [0.2.2](https://github.com/openfga/cli/compare/v0.2.1...v0.2.2) (2024-01-08)
+
+Changed:
+- add `fga store import` to import store data (#215)
+- allow specifying `tuple_file` to reference tuples in the FGA store format (#212)
+- support continuation token in `fga tuple changes` method and expose it in the output (#218)
+- add support for specifying condition/context in queries and in write (#219) 
+- allow more comments in the model (#221)
+
+Fixed:
+- fixed issue writing models with conditions
+
 ## v0.2.1
 
 ### [0.2.1](https://github.com/openfga/cli/compare/v0.2.0...v0.2.1) (2023-12-14)

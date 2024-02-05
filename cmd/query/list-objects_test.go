@@ -6,8 +6,9 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/openfga/cli/internal/mocks"
 	"github.com/openfga/go-sdk/client"
+
+	mock_client "github.com/openfga/cli/internal/mocks"
 )
 
 var errMockListObjects = errors.New("mock error")
@@ -39,12 +40,13 @@ func TestListObjectsWithError(t *testing.T) {
 		Relation:         "writer",
 		Type:             "doc",
 		ContextualTuples: contextualTuples,
+		Context:          queryContext,
 	}
 	mockBody.EXPECT().Body(body).Return(mockRequest)
 
 	mockFgaClient.EXPECT().ListObjects(context.Background()).Return(mockBody)
 
-	_, err := listObjects(mockFgaClient, "user:foo", "writer", "doc", contextualTuples)
+	_, err := listObjects(mockFgaClient, "user:foo", "writer", "doc", contextualTuples, queryContext)
 	if err == nil {
 		t.Error("Expect error but there is none")
 	}
@@ -84,7 +86,7 @@ func TestListObjectsWithNoError(t *testing.T) {
 
 	mockFgaClient.EXPECT().ListObjects(context.Background()).Return(mockBody)
 
-	output, err := listObjects(mockFgaClient, "user:foo", "writer", "doc", contextualTuples)
+	output, err := listObjects(mockFgaClient, "user:foo", "writer", "doc", contextualTuples, nil)
 	if err != nil {
 		t.Error(err)
 	}

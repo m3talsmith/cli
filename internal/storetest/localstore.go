@@ -6,10 +6,11 @@ import (
 
 	"github.com/oklog/ulid/v2"
 	pb "github.com/openfga/api/proto/openfga/v1"
-	"github.com/openfga/cli/internal/authorizationmodel"
 	"github.com/openfga/go-sdk/client"
 	"github.com/openfga/openfga/pkg/server"
 	"github.com/openfga/openfga/pkg/storage/memory"
+
+	"github.com/openfga/cli/internal/authorizationmodel"
 )
 
 const writeMaxChunkSize = 40
@@ -69,43 +70,45 @@ func initLocalStore(
 	return &storeID, modelID, nil
 }
 
-func getLocalServerAndModel(
-	storeData StoreData,
-	basePath string,
-) (*server.Server, *authorizationmodel.AuthzModel, error) {
+func getLocalServerModelAndTuples(
+	storeData *StoreData,
+	format authorizationmodel.ModelFormat,
+) (*server.Server, *authorizationmodel.AuthzModel, func(), error) {
 	var fgaServer *server.Server
 
 	var authModel *authorizationmodel.AuthzModel
 
-	format, err := storeData.LoadModel(basePath)
-	if err != nil {
-		return nil, nil, err
-	}
+	stopServerFn := func() {}
 
 	if storeData.Model == "" {
-		return fgaServer, authModel, nil
+		return fgaServer, authModel, stopServerFn, nil
 	}
 
 	// If we have at least one local test, initialize the local server
 	datastore := memory.New()
 
-	fgaServer, err = server.NewServerWithOpts(server.WithDatastore(datastore))
+	fgaServer, err := server.NewServerWithOpts(server.WithDatastore(datastore))
 	if err != nil {
-		return nil, nil, err //nolint:wrapcheck
+		return nil, nil, stopServerFn, err //nolint:wrapcheck
 	}
 
 	tempModel := authorizationmodel.AuthzModel{}
 	if format == authorizationmodel.ModelFormatJSON {
 		if err := tempModel.ReadFromJSONString(storeData.Model); err != nil {
-			return nil, nil, err //nolint:wrapcheck
+			return nil, nil, stopServerFn, err //nolint:wrapcheck
 		}
 	} else {
 		if err := tempModel.ReadFromDSLString(storeData.Model); err != nil {
-			return nil, nil, err //nolint:wrapcheck
+			return nil, nil, stopServerFn, err //nolint:wrapcheck
 		}
 	}
 
 	authModel = &tempModel
 
-	return fgaServer, authModel, nil
+	stopServerFn = func() {
+		datastore.Close()
+		fgaServer.Close()
+	}
+
+	return fgaServer, authModel, stopServerFn, nil
 }

@@ -23,10 +23,11 @@ import (
 
 	"github.com/oklog/ulid/v2"
 	pb "github.com/openfga/api/proto/openfga/v1"
-	"github.com/openfga/cli/internal/slices"
 	openfga "github.com/openfga/go-sdk"
 	language "github.com/openfga/language/pkg/go/transformer"
 	"google.golang.org/protobuf/encoding/protojson"
+
+	"github.com/openfga/cli/internal/slices"
 )
 
 func getCreatedAtFromModelID(id string) (*time.Time, error) {
@@ -80,6 +81,20 @@ func (model *AuthzModel) GetTypeDefinitions() []openfga.TypeDefinition {
 	}
 
 	return *model.TypeDefinitions
+}
+
+func (model *AuthzModel) GetConditions() *map[string]openfga.Condition {
+	conditions := make(map[string]openfga.Condition)
+
+	if model == nil || model.Conditions == nil {
+		return &conditions
+	}
+
+	for conditionName, condition := range model.Conditions {
+		conditions[conditionName] = *condition
+	}
+
+	return &conditions
 }
 
 func (model *AuthzModel) GetProtoModel() *pb.AuthorizationModel {

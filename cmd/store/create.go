@@ -20,13 +20,14 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/openfga/go-sdk/client"
+	"github.com/spf13/cobra"
+
 	"github.com/openfga/cli/cmd/model"
 	"github.com/openfga/cli/internal/authorizationmodel"
 	"github.com/openfga/cli/internal/cmdutils"
 	"github.com/openfga/cli/internal/fga"
 	"github.com/openfga/cli/internal/output"
-	"github.com/openfga/go-sdk/client"
-	"github.com/spf13/cobra"
 )
 
 type CreateStoreAndModelResponse struct {
@@ -45,7 +46,7 @@ func create(fgaClient client.SdkClient, storeName string) (*client.ClientCreateS
 	return store, nil
 }
 
-func createStoreWithModel(
+func CreateStoreWithModel(
 	clientConfig fga.ClientConfig,
 	storeName string,
 	inputModel string,
@@ -120,7 +121,7 @@ export FGA_STORE_ID=$(fga store create --model Model.fga | jq -r .store.id)
 			return err //nolint:wrapcheck
 		}
 
-		response, err := createStoreWithModel(clientConfig, storeName, inputModel, createModelInputFormat)
+		response, err := CreateStoreWithModel(clientConfig, storeName, inputModel, createModelInputFormat)
 		if err != nil {
 			return err
 		}
